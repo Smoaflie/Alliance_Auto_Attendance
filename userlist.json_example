@@ -1,0 +1,5 @@
+[
+    {"name": "xxx", "group": "machine", "device_name": "设备A", "MAC": "设备MAC", "user_id": "", "need_sanitization":true, "qq": 347000000},
+    {"name": "xxx", "group": "control", "device_name": "设备B", "MAC": "14:5A:**:**:**:6B", "user_id": "", "need_sanitization":true, "qq": 1960000006},
+    {"name": "xxx", "group": "control", "device_name": "设备C", "MAC": "08:D2:**:**:**:C7", "user_id": "", "need_sanitization":true, "qq":150000000}
+]

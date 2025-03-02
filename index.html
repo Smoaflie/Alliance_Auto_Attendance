@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进度条示例</title>
+    <style>
+        #progressBarContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .roleContainer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nameLabel {
+            width: 80px;
+            text-align: right;
+            font-weight: bold;
+        }
+        .progressBar {
+            position: relative;
+            width: 240px;
+            height: 20px;
+            border: 1px solid #ccc;
+            background-color: #ddd;
+        }
+        .segment {
+            position: absolute;
+            height: 100%;
+        }
+        #datePickerContainer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .arrow {
+            cursor: pointer;
+            font-size: 20px;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="datePickerContainer">
+        <span class="arrow" onclick="changeDate(-1)">&#9664;</span>
+        <input type="text" id="datePicker" readonly>
+        <span class="arrow" onclick="changeDate(1)">&#9654;</span>
+    </div>
+    <div id="progressBarContainer"></div>
+
+    <script>
+        let currentDate = new Date();
+
+        function formatDate(date) {
+            let yy = "20" + date.getFullYear().toString().slice(-2);
+            let mm = String(date.getMonth() + 1).padStart(2, '0');
+            let dd = String(date.getDate()).padStart(2, '0');
+            return `${yy}-${mm}-${dd}`;
+        }
+
+        function updateDateDisplay() {
+            document.getElementById("datePicker").value = formatDate(currentDate);
+            fetchDataAndRender();
+        }
+
+        function changeDate(offset) {
+            currentDate.setDate(currentDate.getDate() + offset);
+            updateDateDisplay();
+        }
+
+        function createProgressBars(data, target_day) {
+            const onWorkTime = [{start: 15, end: 18}, {start: 19, end: 22}];
+            const container = document.getElementById('progressBarContainer');
+            container.innerHTML = '';
+            const totalWidth = window.innerWidth * 2 / 3;
+            data.forEach(config => {
+                const roleContainer = document.createElement('div');
+                roleContainer.className = 'roleContainer';
+                const nameLabel = document.createElement('div');
+                nameLabel.className = 'nameLabel';
+                nameLabel.textContent = config.name;
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progressBar';
+                const background = document.createElement('div');
+                background.className = "segment";
+                background.style.width = `${totalWidth}px`;
+                background.style.backgroundColor = '#73AFEC';
+                progressBar.appendChild(background);
+                const maxTime = 24;
+                onWorkTime.forEach(segment => {
+                    const segmentDiv = document.createElement('div');
+                    segmentDiv.className = 'segment';
+                    segmentDiv.style.width = `${((segment.end - segment.start) / maxTime) * totalWidth}px`;
+                    segmentDiv.style.left = `${(segment.start / maxTime) * totalWidth}px`;
+                    segmentDiv.style.backgroundColor = '#ff4444';
+                    progressBar.appendChild(segmentDiv);
+                });
+                if (config.date[target_day]) {
+                    config.date[target_day].forEach(segment => {
+                        const segmentDiv = document.createElement('div');
+                        segmentDiv.className = 'segment';
+                        segmentDiv.style.width = `${((segment.end - segment.start) / maxTime) * totalWidth}px`;
+                        segmentDiv.style.left = `${(segment.start / maxTime) * totalWidth}px`;
+                        segmentDiv.style.backgroundColor = '#44ff44';
+                        progressBar.appendChild(segmentDiv);
+                    });
+                }
+                config.onclass_date.forEach(segment => {
+                    const segmentDiv = document.createElement('div');
+                    segmentDiv.className = 'segment';
+                    segmentDiv.style.width = `${((segment.end - segment.start) / maxTime) * totalWidth}px`;
+                    segmentDiv.style.left = `${(segment.start / maxTime) * totalWidth}px`;
+                    segmentDiv.style.backgroundColor = '#FFD100';
+                    progressBar.appendChild(segmentDiv);
+                });
+                roleContainer.appendChild(nameLabel);
+                roleContainer.appendChild(progressBar);
+                container.appendChild(roleContainer);
+            });
+        }
+
+        function fetchDataAndRender() {
+            let selectedDate = formatDate(currentDate);
+            fetch(`./get_data?date=${selectedDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    createProgressBars(data, selectedDate);
+                })
+                .catch(error => console.error("获取数据失败:", error));
+        }
+
+        window.addEventListener('resize', fetchDataAndRender);
+        updateDateDisplay();
+    </script>
+</body>
+</html>
